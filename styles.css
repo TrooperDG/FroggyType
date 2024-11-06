@@ -9,25 +9,39 @@
     --textSecondary: #626468;
     --primaryColor: #17B8BD;
 }
-
+*{
+    margin: 0;
+    padding: 0;
+}
 body{
     font-family: 'Roboto', sans-serif;
     background-color: var(--bgColor) ;
     color: var(--textPrimary);
+    /* height: 100%; */
 }
 main{
     margin: 40px auto;
     width: 80vw;
 }
+h1{
+    position: relative;
+    padding-left: 50px;
+}
 h1 svg{
     fill: var(--primaryColor); 
     width: 40px;
+    position: absolute;
+    left: 0px;
 }
 #header{
+    padding:6px  ;
+    color: var(--primaryColor);
+    font-size: 30px;
     margin-top: 70px;
     display: flex;
     justify-content: space-between;
-
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 #game{ 
@@ -43,10 +57,12 @@ h1 svg{
     color: var(--textSecondary);
     line-height: 45px;
     margin: 0px 6px;
+    
 }
 #words{
-    /* filter: blur(10px); */
+    filter: blur(10px);
 }
+
 #game:focus #words{
     filter: blur(0);
 }
@@ -80,17 +96,28 @@ h1 svg{
     }
 }
 #cursor{
-    /* display: none; */
+    display: none;
     background-color: var(--primaryColor);
     height: 36px;
     width: 3px;
     position: fixed;
-    left: 100px;
-    top: 178px;
+    inset: 0;
+    left: 10.2vw;
+    top: 202px;
     border-radius: 2px;
     animation: blink 1s infinite;
     transition: left 0.1s ease, top 0.1s ease;
 }
 #game:focus #cursor{
     display: block;
+}
+#game.disable #words{
+    filter: blur(0);
+    opacity: 0.4;
+}
+#game.disable #focus-error{
+    display: none;
+}
+#game.disable #cursor{
+    display: none;
 }

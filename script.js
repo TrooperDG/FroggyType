@@ -1,10 +1,80 @@
 import words  from "./data.js"
+let wordCount = 0;
+let totalWords = 4;
+let totalKeystrokes = 0;
+let gameTimer = null;
+let gameStartTIme = 0;
+let totalGameTime = 0;
+let wrongLetterCount = 0;
 
+const keySound = new Audio("./assets/sounds/click5_44.wav")
+const errorKeySound = new Audio('./assets/sounds/error3_1.wav')
+
+
+
+function getAccuracy(){
+  // const totalLetters = [...document.querySelectorAll('.letter')]
+  const correctLetterCount = [...document.querySelectorAll(".letter.correct")].length;
+  const typingAccuracy = Math.round((correctLetterCount / totalKeystrokes) * 100)
+  return typingAccuracy < 0 ? 0 : typingAccuracy 
+}
+function getWpm() {
+  const words = [...document.querySelectorAll('.word')];
+  const lastTypedWord = document.querySelector('.word.current');
+  const lastTypedWordIndex = words.indexOf(lastTypedWord);
+  const typedWords = words.slice(0, lastTypedWordIndex+1);
+  const correctWords = typedWords.filter(word => {
+    const letters = [...word.children]
+    const correctTypedLetters = letters.filter(letter => letter.classList.contains("correct"))
+    const incorrectTypedLetters = letters.filter(letter => letter.classList.contains("incorrect"))
+    return (
+      incorrectTypedLetters.length === 0 &&
+      correctTypedLetters.length === letters.length
+    )
+  });
+  return correctWords?.length || 0
+}
+function gameStart() {
+  gameTimer = setInterval(() => {
+    if (!gameStartTIme) {
+      gameStartTIme = new Date().getTime()
+    }
+    document.getElementById("timer").innerHTML = (Math.floor( (new Date().getTime() - gameStartTIme) / 1000) + 1)
+  }, 1000)
+}
+function gameRestart() {
+  clearInterval(gameTimer)
+  gameTimer = null
+  gameStartTIme = 0
+  totalGameTime = 0
+  document.getElementById("timer").innerHTML = 0
+  document.getElementById("accuracy").innerHTML = ""
+  newGame()
+}
+function gameOver(){
+  totalGameTime = Math.floor((new Date().getTime() - gameStartTIme) / 1000)
+  totalGameTime = totalGameTime > 100000? 0 : totalGameTime  // for one word purpose
+  clearInterval(gameTimer);
+  gameTimer = null;
+  gameStartTIme = 0;
+
+  addClass(document.getElementById('game'), 'disable')
+  document.getElementById("timer").innerHTML = `Time: ${totalGameTime }`
+  document.getElementById("accuracy").innerHTML = `Accuracy: ${getAccuracy() }%`
+  document.getElementById("word-counter").innerHTML = 
+    `WPM: ${Math.floor(getWpm() / totalGameTime * 60)}`
+
+}
+function wordCounter(){
+  wordCount += 1
+  document.getElementById("word-counter").innerHTML = `${wordCount}/${totalWords}`
+}
 function addClass(element , name){
-    element.classList.add(name);
+    // element.className += " " + name
+    element.classList.add(name)
 }
 function removeClass(element , name){
-    // element.className = element.className.replace(name , '');
+    // element.className = element.className.replace(name, "")
     element.classList.remove(name)
 }
 function randomWord(){
@@ -17,19 +87,12 @@ function wordFormatter(word){
       .join('</span><span  class="letter">')}</span></div>`  
 }
 
-function newGame(){
-    const gameWords = document.getElementById("words");
-    gameWords.innerHTML ='';
-
-    for(let i = 0; i < 100; i++){
-        gameWords.innerHTML += " " + wordFormatter(randomWord())
-    }
-     addClass(document.querySelector(".word"), "current")
-     addClass(document.querySelector(".letter"), "current")
-
-
-document.getElementById('game').addEventListener('keyup' , event => {
+function handleKeyDown(event){
+  if (document.querySelector("#game.disable")) {
+    return
+  }
   const inputKey = event.key
+  const gameWords = document.getElementById("words")
   const currentLetter = document.querySelector(".letter.current")
   const currentWord = document.querySelector(".word.current")
   const expectedKey = currentLetter?.innerHTML || " "
@@ -37,12 +100,21 @@ document.getElementById('game').addEventListener('keyup' , event => {
   const isInputSpace = inputKey === " "
   const isInputBackspace = inputKey === "Backspace"
   const isFirstLetter = currentLetter === currentWord.firstElementChild
- 
 
-//   console.log({ expectedKey, inputKey })
-
-  // for the letters
+  //sound play
+  errorKeySound.currentTime = 0
+  keySound.currentTime = 0
+  if (isInputLetter && currentLetter) {
+    inputKey !== expectedKey ? errorKeySound.play() : keySound.play()
+  }
+  if (isInputBackspace || isInputSpace) {
+    keySound.play()
+  }
+  //start timer
+  if (!gameTimer && isInputLetter) gameStart()
+  // check the letters
   if (isInputLetter) {
+    totalKeystrokes += 1;
     if (currentLetter) {
       addClass(
         currentLetter,
@@ -52,37 +124,74 @@ document.getElementById('game').addEventListener('keyup' , event => {
       if (currentLetter.nextElementSibling) {
         addClass(currentLetter.nextElementSibling, "current")
       }
+      if (inputKey !== expectedKey) wrongLetterCount += 1
     } else {
       const incorrectLetter = document.createElement("span")
       incorrectLetter.innerHTML = inputKey
       incorrectLetter.className = "letter incorrect extra"
       currentWord.appendChild(incorrectLetter)
+      errorKeySound.play()
+      wrongLetterCount += 1
     }
+    // increasing the header opacity
+    document.getElementById("header").style.opacity = "1"
   }
-  // for the word spaces
-  if (isInputSpace) {
+  //stop timer
+  if (currentLetter === gameWords.lastElementChild.lastElementChild) {
+    if (inputKey === expectedKey) gameOver()
+  }
+  // check the word spaces
+  if (
+    //the game should not start with space
+    isInputSpace &&
+    expectedKey !== gameWords.firstElementChild.firstElementChild.innerHTML
+  ) {
     if (expectedKey !== " ") {
       const skippedLetters = [
         ...document.querySelectorAll(".word.current .letter:not(.correct)"),
       ]
-
       skippedLetters.forEach((letter) => {
-        addClass(letter, "incorrect")
+        addClass(letter, "skipped")
+        totalKeystrokes += 1;
       })
+      addClass(currentLetter, "skip-start")
     }
 
-    removeClass(currentWord, "current")
-    addClass(currentWord.nextElementSibling, "current")
-    if (currentLetter) removeClass(currentLetter, "current")
-    addClass(currentWord.nextElementSibling.firstElementChild, "current")
+    if (currentLetter && currentLetter !== currentWord.firstElementChild) {
+      removeClass(currentLetter, "current")
+      if (currentWord === gameWords.lastElementChild) {
+        gameOver()
+      }
+    }
+    if (currentWord.nextElementSibling) {
+      if (currentLetter !== currentWord.firstElementChild) {
+        removeClass(currentWord, "current")
+        addClass(currentWord.nextElementSibling, "current")
+        addClass(currentWord.nextElementSibling.firstElementChild, "current")
+        wordCounter()
+      }
+    }
   }
-  // for the BackSpace
-  if (isInputBackspace) {
+  // check the BackSpace
+  if (isInputBackspace &&currentLetter !== gameWords.firstElementChild.firstElementChild){
     if (currentLetter && isFirstLetter) {
       removeClass(currentWord, "current")
       removeClass(currentLetter, "current")
       addClass(currentWord.previousElementSibling, "current")
+
+      //skipp finder 
+      if(currentWord.previousElementSibling.lastElementChild){
+        let sibling = currentWord.previousElementSibling.lastElementChild;
+        while (sibling.classList.contains("skipped")) {
+          if(sibling.classList.contains("skip-start")){
+            addClass(sibling , "current")
+            break;
+          }
+          sibling = sibling.previousElementSibling;
+        }
+      }
     }
+   
     if (currentLetter && !isFirstLetter) {
       removeClass(currentLetter, "current")
       addClass(currentLetter.previousElementSibling, "current")
@@ -99,16 +208,12 @@ document.getElementById('game').addEventListener('keyup' , event => {
       }
     }
   }
-  //moving the lines up
-  if (currentWord.getBoundingClientRect().top > 230) {
-    const words = document.getElementById("words")
-    const marginTop = parseInt(words.style.marginTop || '0px')
-    words.style.marginTop = (marginTop - 45) + "px"
-  }
+  // starting new game on pressing enter
+  if (inputKey === "Enter") gameRestart()
   // moving the cursor
+  const cursor = document.getElementById("cursor")
   const nextLetter = document.querySelector(".letter.current")
   const nextWord = document.querySelector(".word.current")
-  const cursor = document.getElementById("cursor")
   if (nextLetter) {
     cursor.style.top = nextLetter.getBoundingClientRect().top + 2 + "px"
     cursor.style.left = nextLetter.getBoundingClientRect().left + "px"
@@ -116,7 +221,45 @@ document.getElementById('game').addEventListener('keyup' , event => {
     cursor.style.top = nextWord.getBoundingClientRect().top + 5 + "px"
     cursor.style.left = nextWord.getBoundingClientRect().right + "px"
   }
-})
-
+  //stopping the blink animation while typing
+  cursor.style.animation = "none"
+  //moving the lines up
+  if (parseInt(cursor.style.top) > 250) {
+    const words = document.getElementById("words")
+    const marginTop = parseInt(words.style.marginTop || "0px")
+    words.style.marginTop = marginTop - 45 + "px"
+    cursor.style.top = nextWord.getBoundingClientRect().top + 5 + "px"
+  }
+  // moving the lines down
+  if (parseInt(cursor.style.top) < 200) {
+    const words = document.getElementById("words")
+    const marginTop = parseInt(words.style.marginTop || "0px")
+    words.style.marginTop = marginTop + 45 + "px"
+    cursor.style.top = nextWord.getBoundingClientRect().top + 5 + "px"
+  }
 }
-newGame()
+
+function newGame(){
+  const gameWords = document.getElementById("words");
+  gameWords.innerHTML ='';
+  for(let i = 0; i < totalWords; i++){
+    gameWords.innerHTML += " " + wordFormatter(randomWord())
+  }
+  addClass(document.querySelector(".word"), "current")
+  addClass(document.querySelector(".letter"), "current")
+
+  // game focus
+  const typingArea = document.getElementById("game");
+  window.addEventListener("DOMContentLoaded", () => { typingArea.focus(); })
+  window.addEventListener("keydown",() => {
+    if(document.activeElement !== typingArea) typingArea.focus();
+  })
+
+  //updating the word counter
+  document.getElementById("word-counter").innerHTML = `0/${totalWords}`
+  // comparing the input and expected keys 
+  document.getElementById('game').addEventListener('keydown' , handleKeyDown)
+}
+
+
+newGame();
