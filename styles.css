@@ -17,15 +17,22 @@ body{
     font-family: 'Roboto', sans-serif;
     background-color: var(--bgColor) ;
     color: var(--textPrimary);
-    /* height: 100%; */
+    height: 100%;
 }
 main{
     margin: 40px auto;
-    width: 80vw;
+    width: 75vw;
+    height: 100%;
+}
+#header{
+    /* background-color: #18dda2; */
+    display: flex;
+    align-items: center;
 }
 h1{
     position: relative;
     padding-left: 50px;
+    margin-right: auto;;
 }
 h1 svg{
     fill: var(--primaryColor); 
@@ -33,10 +40,10 @@ h1 svg{
     position: absolute;
     left: 0px;
 }
-#header{
+#info-container{
     padding:6px  ;
     color: var(--primaryColor);
-    font-size: 30px;
+    font-size: 1.9rem;
     margin-top: 70px;
     display: flex;
     justify-content: space-between;
@@ -53,14 +60,14 @@ h1 svg{
 .word{
     display: inline-block;
     font-family: 'Roboto Mono', monospace;
-    font-size: 30px;
+    font-size: 1.9rem;
     color: var(--textSecondary);
     line-height: 45px;
     margin: 0px 6px;
     
 }
 #words{
-    filter: blur(10px);
+    filter: blur(8px);
 }
 
 #game:focus #words{
@@ -71,7 +78,7 @@ h1 svg{
     inset: 0;
     text-align: center;
     margin-top: 55px;
-    font-size: 18px;
+    font-size: 1.2rem;
     color: var(--textPrimary);
     font-family: 'Roboto Mono', monospace;
 }
@@ -96,13 +103,13 @@ h1 svg{
     }
 }
 #cursor{
-    display: none;
+    /* display: none; */
     background-color: var(--primaryColor);
     height: 36px;
     width: 3px;
     position: fixed;
     inset: 0;
-    left: 10.2vw;
+    left: 12.6vw;
     top: 202px;
     border-radius: 2px;
     animation: blink 1s infinite;
@@ -120,4 +127,112 @@ h1 svg{
 }
 #game.disable #cursor{
     display: none;
+}
+footer{
+    position: fixed;
+    bottom: 40px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    font-family: 'Roboto Mono';
+    font-size: 0.7rem;
+}
+#features-info{
+    color: var(--textSecondary);
+}
+#features-info span{
+    background-color: var(--textSecondary);
+    padding: 0px 6px;
+    color: var(--bgColor);
+    border-radius: 2px;
+    margin-right: 8px;
+    
+}
+
+/* volume button styling */
+#volume-button{
+    position: relative;
+    /* background-color: #17B8BD; */
+    padding: 0px 10px;
+}
+.high svg{
+    fill: var(--textPrimary);    
+}
+.low svg{
+    fill: #ddd;    
+}
+.mute svg{
+    fill: var(--textSecondary);
+}
+
+.high{
+    display: block;
+}
+.low{
+    display: none;
+}
+.mute{
+    display: none;
+}
+
+#volume-slider-container{
+    display: inline-block;
+    opacity: 0;
+    pointer-events: none;
+    background-color: #323232;
+    padding: 6px 16px 14px 16px;
+    border-radius: 4px;
+    position: absolute;
+    top: 28px;
+    left: -66px;
+    transition: opacity 0.2s ;
+}
+#volume-button:hover #volume-slider-container{
+    opacity: 1;
+    pointer-events: all;
+}
+/* General slider styling */
+#volumeSlider {
+    -webkit-appearance: none; /* Removing default styling */
+    width: 140px;
+    height: 4px;
+    background: var(--primaryColor);
+    border-radius: 5px;
+    outline: none;
+    opacity: 0.8;
+    transition: opacity 0.2s ;
+}
+#volumeSlider:hover {
+    opacity: 1;
+}
+
+/* Webkit browsers (Chrome, Safari, etc.) */
+#volumeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s, width 0.2s, height 0.2s;
+}
+#volumeSlider::-webkit-slider-thumb:hover {
+    width: 15px;
+    height: 15px;
+}
+
+/* Firefox */
+#volumeSlider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s, width 0.2s, height 0.2s;
+}
+#volumeSlider::-moz-range-thumb:hover {
+    width: 15px;
+    height: 15px;
 }

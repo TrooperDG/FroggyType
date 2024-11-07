@@ -7,11 +7,55 @@ let gameStartTIme = 0;
 let totalGameTime = 0;
 let wrongLetterCount = 0;
 
+
+//mute unmute icons
+const highSound = document.querySelector(".high")
+const lowSound = document.querySelector(".low")
+const muteSound = document.querySelector(".mute")
+// key press sounds
 const keySound = new Audio("./assets/sounds/click5_44.wav")
 const errorKeySound = new Audio('./assets/sounds/error3_1.wav')
+const speakerIconContainer = document.getElementById("speaker-icon-container")
+const volumeSlider = document.getElementById("volumeSlider");
+let KeyPressVolume = volumeSlider.value;
+volumeSlider.addEventListener("input", () =>{
+KeyPressVolume = volumeSlider.value;
+// changing the icons when slided
+  if (volumeSlider.value == 0) {
+    highSound.style.display = "none"
+    lowSound.style.display = "none"
+    muteSound.style.display = "block"
+  } else if (volumeSlider.value > 0.5) {
+    highSound.style.display = "block"
+    lowSound.style.display = "none"
+    muteSound.style.display = "none"
+  }else{
+  highSound.style.display = "none"
+  lowSound.style.display = "block"
+  muteSound.style.display = "none"
+  }
+})
+// changing the icons when clicked
+speakerIconContainer.addEventListener("click", () => {
+  console.log("yosh")
+  if (volumeSlider.value == 0) {
+    console.log("hii")
+    volumeSlider.value = 0.51
+    highSound.style.display = "block"
+    lowSound.style.display = "none"
+    muteSound.style.display = "none"
+    KeyPressVolume = volumeSlider.value
+  } else {
+    volumeSlider.value = 0;
+    highSound.style.display = "none"
+    lowSound.style.display = "none"
+    muteSound.style.display = "block"
+    KeyPressVolume = volumeSlider.value
+  }
+})
 
 
-
+//UTILITY FUNCOTIONS...
 function getAccuracy(){
   // const totalLetters = [...document.querySelectorAll('.letter')]
   const correctLetterCount = [...document.querySelectorAll(".letter.correct")].length;
@@ -44,25 +88,44 @@ function gameStart() {
 }
 function gameRestart() {
   clearInterval(gameTimer)
-  gameTimer = null
-  gameStartTIme = 0
-  totalGameTime = 0
   document.getElementById("timer").innerHTML = 0
   document.getElementById("accuracy").innerHTML = ""
+  //reseting info values
+  totalKeystrokes = 0
+  gameTimer = null
+  gameStartTIme = 0
   newGame()
 }
 function gameOver(){
   totalGameTime = Math.floor((new Date().getTime() - gameStartTIme) / 1000)
   totalGameTime = totalGameTime > 100000? 0 : totalGameTime  // for one word purpose
   clearInterval(gameTimer);
-  gameTimer = null;
-  gameStartTIme = 0;
-
   addClass(document.getElementById('game'), 'disable')
   document.getElementById("timer").innerHTML = `Time: ${totalGameTime }`
   document.getElementById("accuracy").innerHTML = `Accuracy: ${getAccuracy() }%`
   document.getElementById("word-counter").innerHTML = 
     `WPM: ${Math.floor(getWpm() / totalGameTime * 60)}`
+  
+
+  // game reset option
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      removeClass(document.getElementById("game"), "disable")
+      gameRestart()
+      //... have make a funtion about this cursor thingi>>
+       const cursor = document.getElementById("cursor")
+       const nextLetter = document.querySelector(".letter.current")
+       if (nextLetter) {
+         cursor.style.top = nextLetter.getBoundingClientRect().top + 2 + "px"
+         cursor.style.left = nextLetter.getBoundingClientRect().left + "px"
+       }
+      // reseting info values
+      totalKeystrokes = 0
+      gameTimer = null
+      gameStartTIme = 0
+    }
+  })
 
 }
 function wordCounter(){
@@ -104,14 +167,17 @@ function handleKeyDown(event){
   //sound play
   errorKeySound.currentTime = 0
   keySound.currentTime = 0
+  keySound.volume = KeyPressVolume
+  errorKeySound.volume = KeyPressVolume
   if (isInputLetter && currentLetter) {
     inputKey !== expectedKey ? errorKeySound.play() : keySound.play()
   }
   if (isInputBackspace || isInputSpace) {
     keySound.play()
   }
+
   //start timer
-  if (!gameTimer && isInputLetter) gameStart()
+  if (!gameTimer && isInputLetter) gameStart();
   // check the letters
   if (isInputLetter) {
     totalKeystrokes += 1;
@@ -133,8 +199,8 @@ function handleKeyDown(event){
       errorKeySound.play()
       wrongLetterCount += 1
     }
-    // increasing the header opacity
-    document.getElementById("header").style.opacity = "1"
+    // increasing the info-container opacity
+    document.getElementById("info-container").style.opacity = "1"
   }
   //stop timer
   if (currentLetter === gameWords.lastElementChild.lastElementChild) {
@@ -210,6 +276,7 @@ function handleKeyDown(event){
   }
   // starting new game on pressing enter
   if (inputKey === "Enter") gameRestart()
+  
   // moving the cursor
   const cursor = document.getElementById("cursor")
   const nextLetter = document.querySelector(".letter.current")
@@ -254,12 +321,11 @@ function newGame(){
   window.addEventListener("keydown",() => {
     if(document.activeElement !== typingArea) typingArea.focus();
   })
-
+ 
   //updating the word counter
   document.getElementById("word-counter").innerHTML = `0/${totalWords}`
   // comparing the input and expected keys 
   document.getElementById('game').addEventListener('keydown' , handleKeyDown)
 }
-
 
 newGame();
