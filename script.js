@@ -1,12 +1,62 @@
 import words  from "./data.js"
+
+const wordToggle = document.querySelector(".word-count-toggle")
+const timerToggle = document.querySelector(".timer-count-toggle")
+const wordCountContainer = document.querySelector(".word-count-container")
+const timerCountContainer = document.querySelector(".timer-count-container")
+
+let totalWords = 5;
+if(wordToggle.classList.contains('active')){
+  totalWords = parseInt(document.querySelector(".word-count.active").dataset.count,10);
+}else{
+  totalWords = 6;
+}
+
+wordToggle.addEventListener("click", () => {
+  addClass(wordToggle, "active");
+  removeClass(timerToggle, "active");
+  addClass(wordCountContainer, "visible")
+  removeClass(timerCountContainer, "visible")
+  totalWords = parseInt(document.querySelector(".word-count.active").dataset.count,10);
+  gameRestart();
+})
+timerToggle.addEventListener("click", () => {
+  addClass(timerToggle, "active");
+  removeClass(wordToggle, "active");
+  addClass(timerCountContainer, "visible")
+  removeClass(wordCountContainer, "visible")
+  totalWords = 3;
+  gameRestart();
+})
+
+// let totalWords = parseInt(document.querySelector(".word-count.active").dataset.count,10)
+
+const wordCountButtons = document.querySelectorAll(".word-count")
+wordCountButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    totalWords = parseInt(button.dataset.count, 10)
+    removeClass(document.querySelector(".word-count.active"), "active")
+    addClass(button, "active")
+    gameRestart()
+  })
+})
+let totalTime = 30;
+const timerCountButtons = document.querySelectorAll(".timer-count")
+timerCountButtons.forEach((button) =>{
+  button.addEventListener("click", () => {
+    totalTime = parseInt(button.dataset.count, 10)
+    removeClass(document.querySelector(".timer-count.active"), "active")
+    addClass(button, "active")
+    gameRestart() 
+  })
+})
+
 let wordCount = 0;
-let totalWords = 4;
 let totalKeystrokes = 0;
 let gameTimer = null;
 let gameStartTIme = 0;
 let totalGameTime = 0;
 let wrongLetterCount = 0;
-
 
 //mute unmute icons
 const highSound = document.querySelector(".high")
@@ -37,9 +87,7 @@ KeyPressVolume = volumeSlider.value;
 })
 // changing the icons when clicked
 speakerIconContainer.addEventListener("click", () => {
-  console.log("yosh")
   if (volumeSlider.value == 0) {
-    console.log("hii")
     volumeSlider.value = 0.51
     highSound.style.display = "block"
     lowSound.style.display = "none"
@@ -55,7 +103,7 @@ speakerIconContainer.addEventListener("click", () => {
 })
 
 
-//UTILITY FUNCOTIONS...
+//UTILITY FUNCTIONS...
 function getAccuracy(){
   // const totalLetters = [...document.querySelectorAll('.letter')]
   const correctLetterCount = [...document.querySelectorAll(".letter.correct")].length;
@@ -83,22 +131,36 @@ function gameStart() {
     if (!gameStartTIme) {
       gameStartTIme = new Date().getTime()
     }
-    document.getElementById("timer").innerHTML = (Math.floor( (new Date().getTime() - gameStartTIme) / 1000) + 1)
+    if(timerToggle.classList.contains('active')){
+      document.getElementById("timer").innerHTML =10 - (Math.floor( (new Date().getTime() - gameStartTIme) / 1000) + 1)
+      if((10 - Math.floor( (new Date().getTime() - gameStartTIme) / 1000)) == 0){
+        gameOver();
+      }
+    }
+    
   }, 1000)
 }
 function gameRestart() {
   clearInterval(gameTimer)
-  document.getElementById("timer").innerHTML = 0
-  document.getElementById("accuracy").innerHTML = ""
+  // document.getElementById("timer").innerHTML = 0
+  // document.getElementById("accuracy").innerHTML = ""
+  document.getElementById("info-container").style.opacity = 0;
   //reseting info values
   totalKeystrokes = 0
   gameTimer = null
   gameStartTIme = 0
   newGame()
+
+  const cursor = document.getElementById("cursor")
+  const nextLetter = document.querySelector(".letter.current")
+  if (nextLetter) {
+    cursor.style.top = nextLetter.getBoundingClientRect().top + 2 + "px"
+    cursor.style.left = nextLetter.getBoundingClientRect().left + "px"
+  }
 }
 function gameOver(){
   totalGameTime = Math.floor((new Date().getTime() - gameStartTIme) / 1000)
-  totalGameTime = totalGameTime > 100000? 0 : totalGameTime  // for one word purpose
+  totalGameTime = totalGameTime > 100000 ? 0 : totalGameTime  // for one word purpose
   clearInterval(gameTimer);
   addClass(document.getElementById('game'), 'disable')
   document.getElementById("timer").innerHTML = `Time: ${totalGameTime }`
@@ -106,7 +168,6 @@ function gameOver(){
   document.getElementById("word-counter").innerHTML = 
     `WPM: ${Math.floor(getWpm() / totalGameTime * 60)}`
   
-
   // game reset option
   document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
@@ -114,12 +175,14 @@ function gameOver(){
       removeClass(document.getElementById("game"), "disable")
       gameRestart()
       //... have make a funtion about this cursor thingi>>
-       const cursor = document.getElementById("cursor")
-       const nextLetter = document.querySelector(".letter.current")
-       if (nextLetter) {
-         cursor.style.top = nextLetter.getBoundingClientRect().top + 2 + "px"
-         cursor.style.left = nextLetter.getBoundingClientRect().left + "px"
-       }
+      //  const cursor = document.getElementById("cursor")
+      //  const nextLetter = document.querySelector(".letter.current")
+      //  if (nextLetter) {
+      //   console.log("ye kya hai")
+      //   cursor.style.top = nextLetter.getBoundingClientRect().top + 2 + "px"
+      //   cursor.style.left = nextLetter.getBoundingClientRect().left + "px"
+      //  }
+      
       // reseting info values
       totalKeystrokes = 0
       gameTimer = null
@@ -291,14 +354,14 @@ function handleKeyDown(event){
   //stopping the blink animation while typing
   cursor.style.animation = "none"
   //moving the lines up
-  if (parseInt(cursor.style.top) > 250) {
+  if (parseInt(cursor.style.top) > 340) {
     const words = document.getElementById("words")
     const marginTop = parseInt(words.style.marginTop || "0px")
     words.style.marginTop = marginTop - 45 + "px"
     cursor.style.top = nextWord.getBoundingClientRect().top + 5 + "px"
   }
   // moving the lines down
-  if (parseInt(cursor.style.top) < 200) {
+  if (parseInt(cursor.style.top) < 250) {
     const words = document.getElementById("words")
     const marginTop = parseInt(words.style.marginTop || "0px")
     words.style.marginTop = marginTop + 45 + "px"
@@ -307,25 +370,31 @@ function handleKeyDown(event){
 }
 
 function newGame(){
-  const gameWords = document.getElementById("words");
-  gameWords.innerHTML ='';
-  for(let i = 0; i < totalWords; i++){
+  const gameWords = document.getElementById("words")
+  gameWords.innerHTML = ""
+  // getting the totalwords
+  
+
+
+  for (let i = 0; i < totalWords; i++) {
     gameWords.innerHTML += " " + wordFormatter(randomWord())
   }
   addClass(document.querySelector(".word"), "current")
   addClass(document.querySelector(".letter"), "current")
 
   // game focus
-  const typingArea = document.getElementById("game");
-  window.addEventListener("DOMContentLoaded", () => { typingArea.focus(); })
-  window.addEventListener("keydown",() => {
-    if(document.activeElement !== typingArea) typingArea.focus();
+  const typingArea = document.getElementById("game")
+  window.addEventListener("DOMContentLoaded", () => {
+    typingArea.focus()
   })
- 
+  window.addEventListener("keydown", () => {
+    if (document.activeElement !== typingArea) typingArea.focus()
+  })
+
   //updating the word counter
   document.getElementById("word-counter").innerHTML = `0/${totalWords}`
-  // comparing the input and expected keys 
-  document.getElementById('game').addEventListener('keydown' , handleKeyDown)
+  // comparing the input and expected keys
+  document.getElementById("game").addEventListener("keydown", handleKeyDown)
 }
 
 newGame();

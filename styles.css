@@ -5,6 +5,7 @@
 
 :root{
     --bgColor: #181818;
+    --secondaryBgColor: #0f0f0f;
     --textPrimary: #E5F4F4;
     --textSecondary: #626468;
     --primaryColor: #17B8BD;
@@ -110,7 +111,8 @@ h1 svg{
     position: fixed;
     inset: 0;
     left: 12.6vw;
-    top: 202px;
+    top: 290px;
+    /* top: 202px; */
     border-radius: 2px;
     animation: blink 1s infinite;
     transition: left 0.1s ease, top 0.1s ease;
@@ -236,3 +238,52 @@ footer{
     width: 15px;
     height: 15px;
 }
+
+.customize-container{
+    display: flex;
+    justify-content: center;
+}
+.customize{
+    display: flex;
+    background-color: var(--secondaryBgColor);
+    margin-top: 50px;
+    padding: 6px 20px;
+    border-radius: 8px;
+}
+.customize button{
+    background-color: var(--secondaryBgColor);
+    font-family: 'Roboto Mono';
+    color: #626468;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.count-selector + .count-selector{
+    margin-left: 5px;
+}
+.customize button:hover{
+    color: var(--textPrimary);
+}
+.count-selector.active{
+    color: var(--primaryColor);
+}
+.toggle-buttons{
+    border-right: 2px solid #2b2b2b ;
+    padding-right: 8px;
+    margin-right: 8px;
+}
+.toggle-buttons .active{
+    color: var(--primaryColor);
+}
+.word-count-toggle{
+    margin-right: 5px;
+}
+.count-selector-container{
+    display: none;
+}
+.count-selector-container.visible{
+    display: inline;
+}
+

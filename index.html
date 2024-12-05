@@ -30,18 +30,41 @@
                 </div>
             </div>
         </div>
+        <section class="customize-container">
+            <div class="customize">
+                <div class="toggle-buttons">
+                    <button class="word-count-toggle active" >words</button>
+                    <button class="timer-count-toggle" >timer</button>
+                </div>
+                <div class="word-count-container count-selector-container visible"> 
+                    <button class="word-count count-selector" data-count="10" >10</button>
+                    <button class="word-count count-selector" data-count="20" >20</button>
+                    <button class="word-count count-selector" data-count="50" >50</button>
+                    <button class="word-count count-selector active" data-count="100">100</button>
+                </div>
 
+                <div class="timer-count-container count-selector-container"> 
+                    <button class="timer-count count-selector" data-count="15" >15</button>
+                    <button class="timer-count count-selector active" data-count="30" >30</button>
+                    <button class="timer-count count-selector" data-count="60" >60</button>
+                    <button class="timer-count count-selector" data-count="120">120</button>
+                </div>
+            </div>
+        </section >
+       
         <div id="info-container">
             <div id="word-counter">0/0</div>
             <div id="accuracy"></div>
-            <div id="timer">0</div>
+            <div id="timer"></div>
         </div>
         <div id="game" tabindex="0">
             <div id="words"></div>
             <div id="cursor"></div>
             <div id="focus-error">Click here to focus of press any key</div>
         </div>
+        
     </main>
+    
     <footer>
         <div id="features-info">
             <span>enter</span> - restart
