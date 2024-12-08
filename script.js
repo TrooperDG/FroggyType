@@ -5,11 +5,13 @@ const timerToggle = document.querySelector(".timer-count-toggle")
 const wordCountContainer = document.querySelector(".word-count-container")
 const timerCountContainer = document.querySelector(".timer-count-container")
 
-let totalWords = 5;
+let totalWords = 0;
+let totalTime = 0;
 if(wordToggle.classList.contains('active')){
   totalWords = parseInt(document.querySelector(".word-count.active").dataset.count,10);
 }else{
-  totalWords = 6;
+  totalTime = parseInt(document.querySelector(".timer-count.active").dataset.count,10);
+  totalWords = 220;
 }
 
 wordToggle.addEventListener("click", () => {
@@ -18,15 +20,24 @@ wordToggle.addEventListener("click", () => {
   addClass(wordCountContainer, "visible")
   removeClass(timerCountContainer, "visible")
   totalWords = parseInt(document.querySelector(".word-count.active").dataset.count,10);
+
+  removeClass(document.getElementById("game"), "disable")
   gameRestart();
 })
+
 timerToggle.addEventListener("click", () => {
   addClass(timerToggle, "active");
   removeClass(wordToggle, "active");
   addClass(timerCountContainer, "visible")
   removeClass(wordCountContainer, "visible")
-  totalWords = 3;
+  totalTime = parseInt(document.querySelector(".timer-count.active").dataset.count,10);
+  totalWords = 220;
+  
+  
   gameRestart();
+  // totalKeystrokes = 0
+  // gameTimer = null
+  // gameStartTIme = 0
 })
 
 // let totalWords = parseInt(document.querySelector(".word-count.active").dataset.count,10)
@@ -40,14 +51,15 @@ wordCountButtons.forEach((button) => {
     gameRestart()
   })
 })
-let totalTime = 30;
+
 const timerCountButtons = document.querySelectorAll(".timer-count")
 timerCountButtons.forEach((button) =>{
   button.addEventListener("click", () => {
     totalTime = parseInt(button.dataset.count, 10)
     removeClass(document.querySelector(".timer-count.active"), "active")
     addClass(button, "active")
-    gameRestart() 
+    
+    gameRestart()
   })
 })
 
@@ -57,6 +69,8 @@ let gameTimer = null;
 let gameStartTIme = 0;
 let totalGameTime = 0;
 let wrongLetterCount = 0;
+let correctWordCount = 0;
+let mistakeCount = 0
 
 //mute unmute icons
 const highSound = document.querySelector(".high")
@@ -105,7 +119,6 @@ speakerIconContainer.addEventListener("click", () => {
 
 //UTILITY FUNCTIONS...
 function getAccuracy(){
-  // const totalLetters = [...document.querySelectorAll('.letter')]
   const correctLetterCount = [...document.querySelectorAll(".letter.correct")].length;
   const typingAccuracy = Math.round((correctLetterCount / totalKeystrokes) * 100)
   return typingAccuracy < 0 ? 0 : typingAccuracy 
@@ -118,12 +131,14 @@ function getWpm() {
   const correctWords = typedWords.filter(word => {
     const letters = [...word.children]
     const correctTypedLetters = letters.filter(letter => letter.classList.contains("correct"))
-    const incorrectTypedLetters = letters.filter(letter => letter.classList.contains("incorrect"))
+    const incorrectTypedLetters = letters.filter(letter => letter.classList.contains("incorrect"));
     return (
       incorrectTypedLetters.length === 0 &&
       correctTypedLetters.length === letters.length
     )
   });
+  // for the correct word count info
+  correctWordCount = correctWords?.length || 0;
   return correctWords?.length || 0
 }
 function gameStart() {
@@ -132,31 +147,40 @@ function gameStart() {
       gameStartTIme = new Date().getTime()
     }
     if(timerToggle.classList.contains('active')){
-      document.getElementById("timer").innerHTML =10 - (Math.floor( (new Date().getTime() - gameStartTIme) / 1000) + 1)
-      if((10 - Math.floor( (new Date().getTime() - gameStartTIme) / 1000)) == 0){
+      //timer clock
+      document.getElementById("timer").innerHTML = totalTime - (Math.floor( (new Date().getTime() - gameStartTIme) / 1000) + 1)
+      if((totalTime - Math.floor( (new Date().getTime() - gameStartTIme) / 1000)) <= 0){
         gameOver();
       }
     }
-    
   }, 1000)
 }
 function gameRestart() {
+  removeClass(document.getElementById("game"), "disable")
+
   clearInterval(gameTimer)
-  // document.getElementById("timer").innerHTML = 0
-  // document.getElementById("accuracy").innerHTML = ""
-  document.getElementById("info-container").style.opacity = 0;
+  document.getElementById("timer").innerHTML = ""
+  document.getElementById("accuracy").innerHTML = ""
+  document.getElementById("info-container").style.opacity = 0
+  document.getElementById("other-info-container").style.opacity = 0
   //reseting info values
   totalKeystrokes = 0
   gameTimer = null
   gameStartTIme = 0
-  newGame()
+  wordCount =0;
 
+  newGame()
+  // resetting the margine of the words
+  const words =  document.getElementById("words");
+  words.style.marginTop = "0"
+  // reseting the cursor
   const cursor = document.getElementById("cursor")
   const nextLetter = document.querySelector(".letter.current")
   if (nextLetter) {
     cursor.style.top = nextLetter.getBoundingClientRect().top + 2 + "px"
-    cursor.style.left = nextLetter.getBoundingClientRect().left + "px"
+    cursor.style.left = nextLetter.getBoundingClientRect().left - 6 + "px"
   }
+  cursor.style.animation = "blink 1s infinite";
 }
 function gameOver(){
   totalGameTime = Math.floor((new Date().getTime() - gameStartTIme) / 1000)
@@ -165,14 +189,19 @@ function gameOver(){
   addClass(document.getElementById('game'), 'disable')
   document.getElementById("timer").innerHTML = `Time: ${totalGameTime }`
   document.getElementById("accuracy").innerHTML = `Accuracy: ${getAccuracy() }%`
+
   document.getElementById("word-counter").innerHTML = 
     `WPM: ${Math.floor(getWpm() / totalGameTime * 60)}`
+
+  document.getElementById("other-info-container").style.opacity = 1;
+  document.getElementById("correct-word-count").innerHTML = `typed words : <span> ${correctWordCount} </span>`
+  document.getElementById("mistake-count").innerHTML = `mistakes : <span> ${mistakeCount} </span>`
   
   // game reset option
   document.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
       event.preventDefault()
-      removeClass(document.getElementById("game"), "disable")
+      // removeClass(document.getElementById("game"), "disable")
       gameRestart()
       //... have make a funtion about this cursor thingi>>
       //  const cursor = document.getElementById("cursor")
@@ -184,16 +213,20 @@ function gameOver(){
       //  }
       
       // reseting info values
-      totalKeystrokes = 0
-      gameTimer = null
-      gameStartTIme = 0
+      // totalKeystrokes = 0
+      // gameTimer = null
+      // gameStartTIme = 0
     }
   })
 
 }
 function wordCounter(){
   wordCount += 1
-  document.getElementById("word-counter").innerHTML = `${wordCount}/${totalWords}`
+  if(wordToggle.classList.contains('active')){
+    document.getElementById("word-counter").innerHTML = `${wordCount}/${totalWords}`
+  }else if(timerToggle.classList.contains('active')){
+    document.getElementById("word-counter").innerHTML = `${wordCount}`
+  }
 }
 function addClass(element , name){
     // element.className += " " + name
@@ -243,7 +276,7 @@ function handleKeyDown(event){
   if (!gameTimer && isInputLetter) gameStart();
   // check the letters
   if (isInputLetter) {
-    totalKeystrokes += 1;
+    totalKeystrokes += 1
     if (currentLetter) {
       addClass(
         currentLetter,
@@ -262,8 +295,13 @@ function handleKeyDown(event){
       errorKeySound.play()
       wrongLetterCount += 1
     }
-    // increasing the info-container opacity
-    document.getElementById("info-container").style.opacity = "1"
+
+    // for the mistakes info
+    if (inputKey != expectedKey){
+      mistakeCount += 1;
+    }
+      // increasing the info-container opacity
+      document.getElementById("info-container").style.opacity = "1"
   }
   //stop timer
   if (currentLetter === gameWords.lastElementChild.lastElementChild) {
@@ -338,7 +376,10 @@ function handleKeyDown(event){
     }
   }
   // starting new game on pressing enter
-  if (inputKey === "Enter") gameRestart()
+  if (inputKey === "Enter"){
+    gameRestart();
+    return;
+  }
   
   // moving the cursor
   const cursor = document.getElementById("cursor")
@@ -354,14 +395,14 @@ function handleKeyDown(event){
   //stopping the blink animation while typing
   cursor.style.animation = "none"
   //moving the lines up
-  if (parseInt(cursor.style.top) > 340) {
+  if (parseInt(cursor.style.top) > 400) {
     const words = document.getElementById("words")
     const marginTop = parseInt(words.style.marginTop || "0px")
     words.style.marginTop = marginTop - 45 + "px"
     cursor.style.top = nextWord.getBoundingClientRect().top + 5 + "px"
   }
   // moving the lines down
-  if (parseInt(cursor.style.top) < 250) {
+  if (parseInt(cursor.style.top) < 350) {
     const words = document.getElementById("words")
     const marginTop = parseInt(words.style.marginTop || "0px")
     words.style.marginTop = marginTop + 45 + "px"
@@ -372,10 +413,8 @@ function handleKeyDown(event){
 function newGame(){
   const gameWords = document.getElementById("words")
   gameWords.innerHTML = ""
+
   // getting the totalwords
-  
-
-
   for (let i = 0; i < totalWords; i++) {
     gameWords.innerHTML += " " + wordFormatter(randomWord())
   }
@@ -392,7 +431,12 @@ function newGame(){
   })
 
   //updating the word counter
-  document.getElementById("word-counter").innerHTML = `0/${totalWords}`
+  if(wordToggle.classList.contains('active')){
+    document.getElementById("word-counter").innerHTML = `0/${totalWords}`
+  }else if(timerToggle.classList.contains('active')){
+    document.getElementById("word-counter").innerHTML = `0`
+  }
+
   // comparing the input and expected keys
   document.getElementById("game").addEventListener("keydown", handleKeyDown)
 }

@@ -45,13 +45,16 @@ h1 svg{
     padding:6px  ;
     color: var(--primaryColor);
     font-size: 1.9rem;
-    margin-top: 70px;
+    margin-top: 120px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
-
+/* #word-counter{
+    opacity: 0;
+} */
 #game{ 
     height: 135px;
     overflow: hidden;
@@ -111,7 +114,8 @@ h1 svg{
     position: fixed;
     inset: 0;
     left: 12.6vw;
-    top: 290px;
+    /* top: 290px; */
+    top: 354px;
     /* top: 202px; */
     border-radius: 2px;
     animation: blink 1s infinite;
@@ -158,6 +162,7 @@ footer{
     /* background-color: #17B8BD; */
     padding: 0px 10px;
 }
+
 .high svg{
     fill: var(--textPrimary);    
 }
@@ -253,7 +258,7 @@ footer{
 .customize button{
     background-color: var(--secondaryBgColor);
     font-family: 'Roboto Mono';
-    color: #626468;
+    color: var(--textSecondary);
     font-size: 1rem;
     font-weight: 500;
     border: none;
@@ -287,3 +292,22 @@ footer{
     display: inline;
 }
 
+#other-info-container{
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+}
+#other-info{
+    display: flex;
+    gap: 50px;
+    font-size: 1.2rem;
+    font-weight: 500;
+    font-family: 'Roboto Mono';
+    color: var(--textSecondary);
+}
+#correct-word-count span{
+    color: var(--primaryColor);
+}
+#mistake-count span{
+    color:#ff5555;
+}
