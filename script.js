@@ -187,11 +187,11 @@ function gameOver(){
   totalGameTime = totalGameTime > 100000 ? 0 : totalGameTime  // for one word purpose
   clearInterval(gameTimer);
   addClass(document.getElementById('game'), 'disable')
-  document.getElementById("timer").innerHTML = `Time: ${totalGameTime }`
-  document.getElementById("accuracy").innerHTML = `Accuracy: ${getAccuracy() }%`
+  document.getElementById("timer").innerHTML = `time:${totalGameTime }`
+  document.getElementById("accuracy").innerHTML = `accuracy:${getAccuracy() }%`
 
   document.getElementById("word-counter").innerHTML = 
-    `WPM: ${Math.floor(getWpm() / totalGameTime * 60)}`
+    `wpm:${Math.floor(getWpm() / totalGameTime * 60)}`
 
   document.getElementById("other-info-container").style.opacity = 1;
   document.getElementById("correct-word-count").innerHTML = `typed words : <span> ${correctWordCount} </span>`
